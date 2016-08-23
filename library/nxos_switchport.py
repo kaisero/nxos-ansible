@@ -359,11 +359,14 @@ def get_switchport_config_commands(interface, existing, proposed):
     proposed_mode = proposed.get('mode')
     existing_mode = existing.get('mode')
 
+    trunk_blank = False
+
     commands = []
     command = None
     if proposed_mode != existing_mode:
         if proposed_mode == 'trunk':
-            command = 'switchport mode trunk'
+            command = 'switchport mode trunk ; switchport trunk allowed vlan none'
+            trunk_blank = True
         elif proposed_mode == 'access':
             command = 'switchport mode access'
     if command:
@@ -383,7 +386,7 @@ def get_switchport_config_commands(interface, existing, proposed):
                 if vlan not in existing.get('trunk_vlans_list'):
                     vlans_to_add = True
                     break
-            if vlans_to_add:
+            if vlans_to_add or trunk_blank:
                 command = 'switchport trunk allowed vlan add {0}'.format(proposed.get('trunk_vlans'))
                 commands.append(command)
 
